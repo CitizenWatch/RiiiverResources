@@ -1,0 +1,71 @@
+@startuml
+title iiideaをON(アクティベート)する
+hide footbox
+
+skinparam DefaultFontName "Noto Sans JP, Helvetica, Arial, Liberation Sans"
+skinparam BackgroundColor #F2EEE6
+skinparam Shadowing false
+skinparam NoteBackgroundColor #F9B5AD
+skinparam NodeBorderColor #F26767
+
+skinparam sequence {
+ArrowColor #444444
+ActorBorderColor Black
+LifeLineBorderColor #222222
+LifeLineBackgroundColor White
+BoxBorderColor #FFFFFF
+BoxBackgroundColor #F2fEf6
+GroupBackgroundColor #FFFFFF
+GroupBodyBackgroundColor #F3F0F0
+
+ParticipantBorderColor #111111
+ParticipantBackgroundColor White
+ParticipantFontSize 17
+ParticipantFontColor #111111
+BoundaryBorderColor Gray
+ActorBackgroundColor #eeeeee
+ActorFontColor Black
+
+}
+
+actor User
+participant YourApp as App
+participant "Riiiver\nSDK" as ERSDK
+participant "Riiiver\nCloud" as Riiiver
+
+activate App
+
+App -> ERSDK: ERSDK.sharedInstance()
+activate ERSDK
+App <-- ERSDK: sdk
+
+... ログイン済み ー iiideaは対象のERAppletクラスのインスタンス...
+
+User -> App: PreferenceUIから\niiideaに設定
+App -> ERSDK: 認証セッションを更新\n（**<color purple>これは必要ないか？</color>**）
+App -> ERSDK: Trigger Pieceの設定\niiidea.setTriggerBlockUserPref(\n\ttriggerUserPref:\n)
+App -> ERSDK: Serivce Pieceの設定\niiidea.setSerivceBlockUserPref(\n\tserviceUserPref:\n)
+App -> ERSDK: Action Pieceの設定\niiidea.setActionBlockUserPref(\n\tactionUserPref:\n)
+note right of App: iiideaの__アクティベート前に必ずPreference設定をする__必要がある
+
+User -> App: iiideaをON(利用\n可能状態に)する
+App -> ERSDK: iiidea.activate(\n\tcompletion\n\t\t< unauthorizedPermissionList,\n\t\tunauthorizedProxyList,\n\t\terror >:\n)
+ERSDK <--> Riiiver: iiideaがwebサービスとの認証が\n必要な時の処理など
+App <-- ERSDK: completion(\n\tunauthorizedPermissionList,\n\ttunauthorizedProxyList,\n\terror\n)
+alt completionのunauthorizedPermissionList / unauthorizedProxyList / errorが全てnil <成功>
+    User <-- App: iiideaをONしたことを通知
+else nil以外が戻ってくる <失敗>
+    note right of App
+        外部のwebサービスを利用する場合や、OSに位置情報などの権限を
+        必要とする機能を利用する場合：
+
+            外部Webサービス利用に必要な認証情報が足りない場合:
+                unauthorizedProxyListとして必要な情報リストが渡される。
+
+            OSから必要な権限が取れていない場合:
+                unauthorizedPermissionListとして必要な権限リストが渡される。
+    end note
+    App -> User: 必要な設定を促す
+end
+
+@enduml
