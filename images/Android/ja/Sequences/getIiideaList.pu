@@ -35,24 +35,24 @@ participant "Riiiver\nCloud" as Riiiver
 
 activate App
 
-App -> ERSDK: ERSDK.sharedInstance()
+App -> ERSDK: ERSDK.getInstance().initialize()
 activate ERSDK
 App <-- ERSDK: sdk
 
-App -> ERSDK: ERAuth.sharedInstance.isLoggedIn()
+App -> ERSDK: ERAuth.getInstance().isLoggedIn
 note left: ログイン済みか\n確認する。
 ERSDK --> App:
 
-alt ERAuth.sharedInstance.isLoggedIn() == false (未ログイン)
+alt ERAuth.getInstance().isLoggedIn == false (未ログイン)
     ... ログイン処理 <Riiiverへログインするを参照>                           ...
 end
 
-App -> ERSDK: ERSDK.sharedInstance.getMyApplets(\n\tdeviceId:\n\tcompletion<apllets, error>:\n)
+App -> ERSDK: ERSDK.getInstance().getMyApplets(\n\tString[] deviceIds,\n\tCompletion1<List<ERApplet>> completion\n)
 ERSDK <-> Riiiver: 指定したdevice idの\niiidea一覧を取得
-App <-- ERSDK: completion(apllets, error)
-alt completionのerrorがnil <取得成功>
+App <-- ERSDK: completion(List<ERApplet>, error)
+alt completionのerrorがnull <取得成功>
     User <-- App: iiidea一覧を\n表示する
-else error != nil <取得失敗>
+else error != null <取得失敗>
     App -> App: エラー処理
 end
 

@@ -35,7 +35,7 @@ participant "Riiiver\nCloud" as Riiiver
 
 activate App
 
-App -> ERSDK: ERSDK.sharedInstance()
+App -> ERSDK: ERSDK.getInstance().initialize()
 activate ERSDK
 App <-- ERSDK: sdk
 
@@ -46,7 +46,7 @@ User -> App: PreferenceUIから\niiideaに設定
 App -> ERSDK: 認証セッションを更新
 ... 「認証情報を更新する」参照 ...
 note right of App: iiideaの__アクティベート前に必ずPreference設定が必要__です。\nloadPreferences()を呼ぶとPreferenceを設定したことになります。
-App -> ERSDK: loadPreferences(\n\tapplet: ERApplet,\n\turlBaseFolder: URL\n)
+App -> ERSDK: loadPreferences(\n\tERApplet applet,\n\tURL urlBaseFolder\n)
 App <-- ERSDK: webView内にPreference画面を表示
 User <- App: 設定画面を表示
 User --> ERSDK: Preference画面の操作
@@ -55,21 +55,21 @@ ERSDK <--> Riiiver: iiideaがwebサービスとの認証が\n必要な時の処�
 User <-- ERSDK: Preference画面に値を更新
 
 User -> App: iiideaをON(利用\n可能状態に)する
-App -> ERSDK: iiidea.activate(\n\tcompletion\n\t\t< unauthorizedPermissionList,\n\t\tunauthorizedProxyList,\n\t\terror >:\n)
+App -> ERSDK: iiidea.activate(\n\tContenxt context,\n\tCompletion2<String[], ERServiceProxyData[]> completion\n\t)
 ERSDK <--> Riiiver: iiideaがwebサービスとの認証が\n必要な時の処理など
-App <-- ERSDK: completion(\n\tunauthorizedPermissionList,\n\ttunauthorizedProxyList,\n\terror\n)
-alt completionのunauthorizedPermissionList / unauthorizedProxyList / errorが全てnil <成功>
+App <-- ERSDK: completion(\n\tString[],\n\tERServiceProxyData[],\n\tERError\n)
+alt completionのString[] / tERServiceProxyData[] / ERErrorが全てnull <成功>
     User <-- App: iiideaをONしたことを通知
-else nil以外が戻ってくる <失敗>
+else nulll以外が戻ってくる <失敗>
     note right of App
         外部のwebサービスを利用する場合や、OSに位置情報などの権限を
         必要とする機能を利用する場合：
 
             外部Webサービス利用に必要な認証情報が足りない場合:
-                unauthorizedProxyListとして必要な情報リストが渡される。
+                completionのERServiceProxyData[]にunauthorizedProxyListとして必要な情報リストが渡される。
 
             OSから必要な権限が取れていない場合:
-                unauthorizedPermissionListとして必要な権限リストが渡される。
+                completionのString[]にunauthorizedPermissionListとして必要な権限リストが渡される。
     end note
     App -> User: 必要な設定を促す
 end
