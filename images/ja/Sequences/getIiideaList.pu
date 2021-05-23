@@ -35,10 +35,6 @@ participant "Riiiver\nCloud" as Riiiver
 
 activate App
 
-App -> ERSDK: ERSDK.sharedInstance()
-activate ERSDK
-App <-- ERSDK: sdk
-
 App -> ERSDK: ERAuth.sharedInstance.isLoggedIn()
 note left: ログイン済みか\n確認する。
 ERSDK --> App:

@@ -35,11 +35,7 @@ participant "Riiiver\nCloud" as Riiiver
 
 activate App
 
-App -> ERSDK: ERSDK.sharedInstance()
-activate ERSDK
-App <-- ERSDK: sdk
-
-... ログイン済み ー iiideaは対象のERAppletクラスのインスタンス...
+... ログイン済み ー iiideaは対象のERAppletクラスのインスタンス ...
 
 User -> App: PreferenceUIから\niiideaに設定
 
