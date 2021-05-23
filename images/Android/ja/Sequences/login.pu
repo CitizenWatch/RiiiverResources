@@ -36,10 +36,8 @@ participant "Riiiver\nCloud" as Riiiver
 
 User -> App: App起動
 
-App -> ERSDK: ERSDK.getInstance().initialize()
+App -> ERSDK: ERAuth.getInstance().initialize(Context context)
 activate ERSDK
-App <-- ERSDK: sdk
-deactivate ERSDK
 
 App -> ERSDK: ERAuth.getInstance().isLoggedIn
 note left: ログイン済みか\n確認する。

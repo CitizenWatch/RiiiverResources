@@ -35,9 +35,8 @@ participant "Riiiver\nCloud" as Riiiver
 
 activate App
 
-App -> ERSDK: ERSDK.getInstance().initialize()
+App -> ERSDK: ERAuth.getInstance().initialize(Context context)
 activate ERSDK
-App <-- ERSDK: sdk
 
 ... ログイン済み ー iiideaは対象のERAppletクラスのインスタンス...
 
