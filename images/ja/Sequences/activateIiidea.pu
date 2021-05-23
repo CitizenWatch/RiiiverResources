@@ -42,11 +42,17 @@ App <-- ERSDK: sdk
 ... ログイン済み ー iiideaは対象のERAppletクラスのインスタンス...
 
 User -> App: PreferenceUIから\niiideaに設定
-App -> ERSDK: 認証セッションを更新\n（**<color purple>これは必要ないか？</color>**）
-App -> ERSDK: Trigger Pieceの設定\niiidea.setTriggerBlockUserPref(\n\ttriggerUserPref:\n)
-App -> ERSDK: Serivce Pieceの設定\niiidea.setSerivceBlockUserPref(\n\tserviceUserPref:\n)
-App -> ERSDK: Action Pieceの設定\niiidea.setActionBlockUserPref(\n\tactionUserPref:\n)
-note right of App: iiideaの__アクティベート前に必ずPreference設定をする__必要がある
+
+App -> ERSDK: 認証セッションを更新
+... 「認証情報を更新する」参照 ...
+note right of App: iiideaの__アクティベート前に必ずPreference設定が必要__です。\nloadPreferences()を呼ぶとPreferenceを設定したことになります。
+App -> ERSDK: loadPreferences(\n\tapplet: ERApplet,\n\turlBaseFolder: URL\n)
+App <-- ERSDK: webView内にPreference画面を表示
+User <- App: 設定画面を表示
+User --> ERSDK: Preference画面の操作
+ERSDK -> ERSDK: Preference値の設定
+ERSDK <--> Riiiver: iiideaがwebサービスとの認証が\n必要な時の処理など
+User <-- ERSDK: Preference画面に値を更新
 
 User -> App: iiideaをON(利用\n可能状態に)する
 App -> ERSDK: iiidea.activate(\n\tcompletion\n\t\t< unauthorizedPermissionList,\n\t\tunauthorizedProxyList,\n\t\terror >:\n)
