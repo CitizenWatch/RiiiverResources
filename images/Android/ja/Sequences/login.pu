@@ -1,0 +1,71 @@
+@startuml
+title Riiiverへログインする
+hide footbox
+
+skinparam DefaultFontName "Noto Sans JP, Helvetica, Arial, Liberation Sans"
+skinparam BackgroundColor #F2EEE6
+skinparam Shadowing false
+skinparam NoteBackgroundColor #F9B5AD
+skinparam NodeBorderColor #F26767
+
+skinparam sequence {
+ArrowColor #444444
+ActorBorderColor Black
+LifeLineBorderColor #222222
+LifeLineBackgroundColor White
+BoxBorderColor #FFFFFF
+BoxBackgroundColor #F2fEf6
+GroupBackgroundColor #FFFFFF
+GroupBodyBackgroundColor #F3F0F0
+
+ParticipantBorderColor #111111
+ParticipantBackgroundColor White
+ParticipantFontSize 17
+ParticipantFontColor #111111
+BoundaryBorderColor Gray
+ActorBackgroundColor #eeeeee
+ActorFontColor Black
+
+}
+
+actor User
+participant YourApp as App
+participant "Riiiver\nSDK" as ERSDK
+participant "Safari\n(外部ブラウザ)" as Safari
+participant "Riiiver\nCloud" as Riiiver
+
+User -> App: App起動
+
+App -> ERSDK: ERSDK.sharedInstance()
+activate ERSDK
+App <-- ERSDK: sdk
+deactivate ERSDK
+
+App -> ERSDK: ERAuth.sharedInstance.isLoggedIn()
+note left: ログイン済みか\n確認する。
+ERSDK --> App: 
+
+alt ERAuth.sharedInstance.isLoggedIn() == false (未ログイン)
+    App -> ERSDK: ERAuth.sharedInstance.startWebLogin(\n\tdeviceIds: deviceId,\n\tcompletion: completion\n)
+    ERSDK -> Safari: ログイン画面
+    User -> Safari: ログイン操作
+    Safari <-> Riiiver: 認証プロセス
+    Safari -> App: URLスキーマでアプリ起動
+    App -> ERSDK: URLスキーマで渡されたデータを\nRiiiverSDKに渡す。\nERAuth.sharedInstance.interceptApplication
+    alt ERAuth.sharedInstance.interceptApplicationの結果がtrue
+        App -> ERSDK: ERAuth.sharedInstance.challengeAuthByWebLogin(\n\tdeviceIds: [String]?, \n\tcompletion:((Error?,ERAuthToken?)->Void)?\n)
+        note left: トークン保存を\n試みる。
+        alt completionハンドラーのErrorがnil
+            ERSDK <---> Riiiver: ログイン完了。\nトークン保存成功。 
+        end
+    end
+    
+else ERAuth.sharedInstance.isLoggedIn() == true (ログイン済)
+    ERSDK <---> Riiiver: ログイン済み。\nトークン取得済み。
+end
+
+
+
+
+
+@enduml
