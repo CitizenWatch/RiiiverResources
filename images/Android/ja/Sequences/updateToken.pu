@@ -35,7 +35,7 @@ participant "Riiiver\nCloud" as Riiiver
 
 activate App
 
-App -> ERSDK: ERSDK.sharedInstance()
+App -> ERSDK: ERSDK.getInstance().initialize()
 activate ERSDK
 App <-- ERSDK: sdk
 
@@ -43,14 +43,15 @@ App <-- ERSDK: sdk
 
 App -> App: ネットワーク状態の確認
 alt ネットワークあり（圏内）
-    App -> ERSDK: 認証セッションを更新\nERAuth.sharedInstance.getToken(\n\tcompletionHandler\n)
+    App -> ERSDK: 認証セッションを更新\nERAuth.sharedInstance.getToken(\n\IERAuthGetTokenCallback callback\n)
     ERSDK -> Riiiver: ログイン処理
     ERSDK <-- Riiiver: Token
-    App <-- ERSDK: completionHandler( error, token )
-    alt token != nil(null) && error != nil(null)
+    alt 成功
+    App <-- ERSDK: callback.onSuccess( ERAuthToken token )
         App -> App: tokenを保存\n(\n local.accessToken = token.accessToken\n local.idToken = idToken\n)
         note right: RiiiverSDKから認証情報の取得成功
     else else
+    App <-- ERSDK: callback.onError( Exception error )
         ... ログイン処理からやり直し ...
     end
 else ネットワークなし（圏外）

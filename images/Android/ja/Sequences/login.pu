@@ -36,31 +36,28 @@ participant "Riiiver\nCloud" as Riiiver
 
 User -> App: App起動
 
-App -> ERSDK: ERSDK.sharedInstance()
+App -> ERSDK: ERSDK.getInstance().initialize()
 activate ERSDK
 App <-- ERSDK: sdk
 deactivate ERSDK
 
-App -> ERSDK: ERAuth.sharedInstance.isLoggedIn()
+App -> ERSDK: ERAuth.getInstance().isLoggedIn
 note left: ログイン済みか\n確認する。
 ERSDK --> App: 
 
-alt ERAuth.sharedInstance.isLoggedIn() == false (未ログイン)
-    App -> ERSDK: ERAuth.sharedInstance.startWebLogin(\n\tdeviceIds: deviceId,\n\tcompletion: completion\n)
+alt ERSDK: ERAuth.getInstance().isLoggedIn == false (未ログイン)
+    App -> ERSDK: ERAuth.sharedInstance.startWebLogin(\n\tList<String> deviceIds,\n\tIERAuthWebLoginCallback callback\n)
     ERSDK -> Safari: ログイン画面
     User -> Safari: ログイン操作
     Safari <-> Riiiver: 認証プロセス
     Safari -> App: URLスキーマでアプリ起動
-    App -> ERSDK: URLスキーマで渡されたデータを\nRiiiverSDKに渡す。\nERAuth.sharedInstance.interceptApplication
-    alt ERAuth.sharedInstance.interceptApplicationの結果がtrue
-        App -> ERSDK: ERAuth.sharedInstance.challengeAuthByWebLogin(\n\tdeviceIds: [String]?, \n\tcompletion:((Error?,ERAuthToken?)->Void)?\n)
-        note left: トークン保存を\n試みる。
-        alt completionハンドラーのErrorがnil
-            ERSDK <---> Riiiver: ログイン完了。\nトークン保存成功。 
-        end
+    App -> ERSDK: ERAuth.sharedInstance.challengeAuthByWebLogin(\n\tIntent intent,\n\tIERAuthChallengeCallback callback\n)
+    note left: トークン保存を\n試みる。
+    alt callbackのonSuccess
+        ERSDK <---> Riiiver: ログイン完了。\nトークン保存成功。 
     end
     
-else ERAuth.sharedInstance.isLoggedIn() == true (ログイン済)
+else ERSDK: ERAuth.getInstance().isLoggedIn == true (ログイン済)
     ERSDK <---> Riiiver: ログイン済み。\nトークン取得済み。
 end
 
