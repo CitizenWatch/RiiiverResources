@@ -49,6 +49,8 @@ User -> App: ログアウト
 alt ERAuth.sharedInstance.isLoggedIn() == true (ログイン済)
     ERSDK <---> Riiiver: ログイン済み。\nトークン取得済み。
     App -> ERSDK: ERAuth.sharedInstance.logout(\n\tcompletion: <Error>\n)
+    ERSDK -> Riiiver: ログアウト処理
+    ERSDK <-- Riiiver: 処理終了(error)
     ERSDK --> App: completion(error)
     alt error == nil <成功>
         App -> App: ログアウト成功後の処理
