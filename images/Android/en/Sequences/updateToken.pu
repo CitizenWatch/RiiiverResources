@@ -1,5 +1,5 @@
 @startuml
-title 認証情報を更新する
+title Update credentials
 hide footbox
 
 skinparam DefaultFontName "Noto Sans JP, Helvetica, Arial, Liberation Sans"
@@ -38,24 +38,24 @@ activate App
 App -> ERSDK: ERAuth.getInstance().initialize(Context context)
 activate ERSDK
 
-... ログイン済み ー iiideaは対象のERAppletクラスのインスタンス...
+... Logged in - iiidea is an instance of the target ERApplet class ...
 
-App -> App: ネットワーク状態の確認
-alt ネットワークあり（圏内）
-    App -> ERSDK: 認証セッションを更新\nERAuth.sharedInstance.getToken(\n\IERAuthGetTokenCallback callback\n)
-    ERSDK -> Riiiver: ログイン処理
+App -> App: Check the network status.
+alt Network available (within range)
+    App -> ERSDK: Update authentication session.\nERAuth.sharedInstance.getToken(\n\IERAuthGetTokenCallback callback\n)
+    ERSDK -> Riiiver: Login process
     ERSDK <-- Riiiver: Token
-    alt 成功
+    alt Success
     App <-- ERSDK: callback.onSuccess( ERAuthToken token )
-        App -> App: tokenを保存\n(\n local.accessToken = token.accessToken\n local.idToken = idToken\n)
-        note right: RiiiverSDKから認証情報の取得成功
+        App -> App: Save the token\n(\n local.accessToken = token.accessToken\n local.idToken = idToken\n)
+        note right: Successfully obtained authentication\ninformation from RiiiverSDK.
     else else
     App <-- ERSDK: callback.onError( Exception error )
-        ... ログイン処理からやり直し ...
+        ... Start over from the login process. ...
     end
-else ネットワークなし（圏外）
-    App -> App: ネットワークエラー処理
-    User <- App: 「ネットワークエラー」　
+else No network (out of range)
+    App -> App: Network error handling
+    User <- App: "Network Error!"　
 end
 
 @enduml

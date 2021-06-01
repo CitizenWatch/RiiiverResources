@@ -1,5 +1,5 @@
 @startuml
-title iiidea一覧を取得する
+title Get the list of iiidea
 hide footbox
 
 skinparam DefaultFontName "Noto Sans JP, Helvetica, Arial, Liberation Sans"
@@ -39,20 +39,19 @@ App -> ERSDK: ERAuth.getInstance().initialize(Context context)
 activate ERSDK
 
 App -> ERSDK: ERAuth.getInstance().isLoggedIn
-note left: ログイン済みか\n確認する。
+note left: Make sure the User\nis logged in.
 ERSDK --> App:
 
-alt ERAuth.getInstance().isLoggedIn == false (未ログイン)
-    ... ログイン処理 <Riiiverへログインするを参照>                           ...
+alt ERAuth.getInstance().isLoggedIn == false (Not logged in)
+    ... Login process <see Logging in to Riiiver>                           ...
 end
 
 App -> ERSDK: ERSDK.getInstance().getMyApplets(\n\tString[] deviceIds,\n\tCompletion1<List<ERApplet>> completion\n)
-ERSDK <-> Riiiver: 指定したdevice idの\niiidea一覧を取得
+ERSDK <-> Riiiver: Get the list of iiidea for\nthe specified device id
 App <-- ERSDK: completion(List<ERApplet>, error)
-alt completionのerrorがnull <取得成功>
-    User <-- App: iiidea一覧を\n表示する
-else error != null <取得失敗>
-    App -> App: エラー処理
-end
+alt The error of completion is null <successful acquisition>
+    User <-- App: Display the list\nof iiidea
+else error != null <Acquisition failure>
+    App -> App: Error handling
 
 @enduml

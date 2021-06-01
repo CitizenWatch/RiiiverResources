@@ -1,5 +1,5 @@
 @startuml
-title iiideaをON(アクティベート)する
+title Activate an iiidea
 hide footbox
 
 skinparam DefaultFontName "Noto Sans JP, Helvetica, Arial, Liberation Sans"
@@ -38,39 +38,41 @@ activate App
 App -> ERSDK: ERAuth.getInstance().initialize(Context context)
 activate ERSDK
 
-... ログイン済み ー iiideaは対象のERAppletクラスのインスタンス...
+... Logged in - iiidea is an instance of the target ERApplet class ...
 
-User -> App: PreferenceUIから\niiideaに設定
+User -> App: Configure the PreferenceUI\nto the iiidea
 
-App -> ERSDK: 認証セッションを更新
-... 「認証情報を更新する」参照 ...
-note right of App: iiideaの__アクティベート前に必ずPreference設定が必要__です。\nloadPreferences()を呼ぶとPreferenceを設定したことになります。
+App -> ERSDK: Update authentication session.
+... Refer to "Update credentials" ...
+note right of App: You must set preferences before activating iiidea,\nand calling loadPreferences()\nwill cause the preferences to be set.
 App -> ERSDK: loadPreferences(\n\tERApplet applet,\n\tURL urlBaseFolder\n)
-App <-- ERSDK: webView内にPreference画面を表示
-User <- App: 設定画面を表示
-User --> ERSDK: Preference画面の操作
-ERSDK -> ERSDK: Preference値の設定
-ERSDK <--> Riiiver: iiideaがwebサービスとの認証が\n必要な時の処理など
-User <-- ERSDK: Preference画面に値を更新
+App <-- ERSDK: Display the Preference screen in the webView.
+User <- App: Display the Preference UI
+User --> ERSDK: Preference UI oprerataion
+ERSDK -> ERSDK: Setting the Preference value
+ERSDK <--> Riiiver: Processing when iiidea needs to\nauthenticate with a web service, etc.
+User <-- ERSDK: Update the Preference screen with values.
 
-User -> App: iiideaをON(利用\n可能状態に)する
+User -> App: Turn on (make available)\nthe iiidea.
 App -> ERSDK: iiidea.activate(\n\tContenxt context,\n\tCompletion2<String[], ERServiceProxyData[]> completion\n\t)
-ERSDK <--> Riiiver: iiideaがwebサービスとの認証が\n必要な時の処理など
+ERSDK <--> Riiiver: Processing when iiidea needs to\nauthenticate with a web service, etc.
 App <-- ERSDK: completion(\n\tString[],\n\tERServiceProxyData[],\n\tERError\n)
-alt completionのString[] / tERServiceProxyData[] / ERErrorが全てnull <成功>
-    User <-- App: iiideaをONしたことを通知
-else nulll以外が戻ってくる <失敗>
+alt completionのString[] / tERServiceProxyData[] / All ERError are null <success>.
+    User <-- App: Notification that the iiidea has been turned on
+else Non-null returns <fail>.
     note right of App
-        外部のwebサービスを利用する場合や、OSに位置情報などの権限を
-        必要とする機能を利用する場合：
+        When using external web services or using functions that require authorization such
+        as location information in the OS:
 
-            外部Webサービス利用に必要な認証情報が足りない場合:
-                completionのERServiceProxyData[]にunauthorizedProxyListとして必要な情報リストが渡される。
+            In case the authentication information required to use external web services is not sufficient:
+                The required list of information is passed to ERServiceProxyData[]
+                of completion as unauthorizedProxyList.
 
-            OSから必要な権限が取れていない場合:
-                completionのString[]にunauthorizedPermissionListとして必要な権限リストが渡される。
+            In case the necessary permissions are not obtained from the OS:
+                The required permission list is passed to String[] of completion as 
+                UnauthorizedPermissionList.
     end note
-    App -> User: 必要な設定を促す
+    App -> User: Prompt for necessary settings
 end
 
 @enduml
