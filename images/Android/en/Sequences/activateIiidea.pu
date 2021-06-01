@@ -1,0 +1,76 @@
+@startuml
+title iiideaをON(アクティベート)する
+hide footbox
+
+skinparam DefaultFontName "Noto Sans JP, Helvetica, Arial, Liberation Sans"
+skinparam BackgroundColor #F2EEE6
+skinparam Shadowing false
+skinparam NoteBackgroundColor #F9B5AD
+skinparam NodeBorderColor #F26767
+
+skinparam sequence {
+ArrowColor #444444
+ActorBorderColor Black
+LifeLineBorderColor #222222
+LifeLineBackgroundColor White
+BoxBorderColor #FFFFFF
+BoxBackgroundColor #F2fEf6
+GroupBackgroundColor #FFFFFF
+GroupBodyBackgroundColor #F3F0F0
+
+ParticipantBorderColor #111111
+ParticipantBackgroundColor White
+ParticipantFontSize 17
+ParticipantFontColor #111111
+BoundaryBorderColor Gray
+ActorBackgroundColor #eeeeee
+ActorFontColor Black
+
+}
+
+actor User
+participant YourApp as App
+participant "Riiiver\nSDK" as ERSDK
+participant "Riiiver\nCloud" as Riiiver
+
+activate App
+
+App -> ERSDK: ERAuth.getInstance().initialize(Context context)
+activate ERSDK
+
+... ログイン済み ー iiideaは対象のERAppletクラスのインスタンス...
+
+User -> App: PreferenceUIから\niiideaに設定
+
+App -> ERSDK: 認証セッションを更新
+... 「認証情報を更新する」参照 ...
+note right of App: iiideaの__アクティベート前に必ずPreference設定が必要__です。\nloadPreferences()を呼ぶとPreferenceを設定したことになります。
+App -> ERSDK: loadPreferences(\n\tERApplet applet,\n\tURL urlBaseFolder\n)
+App <-- ERSDK: webView内にPreference画面を表示
+User <- App: 設定画面を表示
+User --> ERSDK: Preference画面の操作
+ERSDK -> ERSDK: Preference値の設定
+ERSDK <--> Riiiver: iiideaがwebサービスとの認証が\n必要な時の処理など
+User <-- ERSDK: Preference画面に値を更新
+
+User -> App: iiideaをON(利用\n可能状態に)する
+App -> ERSDK: iiidea.activate(\n\tContenxt context,\n\tCompletion2<String[], ERServiceProxyData[]> completion\n\t)
+ERSDK <--> Riiiver: iiideaがwebサービスとの認証が\n必要な時の処理など
+App <-- ERSDK: completion(\n\tString[],\n\tERServiceProxyData[],\n\tERError\n)
+alt completionのString[] / tERServiceProxyData[] / ERErrorが全てnull <成功>
+    User <-- App: iiideaをONしたことを通知
+else nulll以外が戻ってくる <失敗>
+    note right of App
+        外部のwebサービスを利用する場合や、OSに位置情報などの権限を
+        必要とする機能を利用する場合：
+
+            外部Webサービス利用に必要な認証情報が足りない場合:
+                completionのERServiceProxyData[]にunauthorizedProxyListとして必要な情報リストが渡される。
+
+            OSから必要な権限が取れていない場合:
+                completionのString[]にunauthorizedPermissionListとして必要な権限リストが渡される。
+    end note
+    App -> User: 必要な設定を促す
+end
+
+@enduml

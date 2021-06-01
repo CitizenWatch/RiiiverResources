@@ -1,0 +1,66 @@
+@startuml
+title Login to the Riiiver
+hide footbox
+
+skinparam DefaultFontName "Noto Sans JP, Helvetica, Arial, Liberation Sans"
+skinparam BackgroundColor #F2EEE6
+skinparam Shadowing false
+skinparam NoteBackgroundColor #F9B5AD
+skinparam NodeBorderColor #F26767
+
+skinparam sequence {
+ArrowColor #444444
+ActorBorderColor Black
+LifeLineBorderColor #222222
+LifeLineBackgroundColor White
+BoxBorderColor #FFFFFF
+BoxBackgroundColor #F2fEf6
+GroupBackgroundColor #FFFFFF
+GroupBodyBackgroundColor #F3F0F0
+
+ParticipantBorderColor #111111
+ParticipantBackgroundColor White
+ParticipantFontSize 17
+ParticipantFontColor #111111
+BoundaryBorderColor Gray
+ActorBackgroundColor #eeeeee
+ActorFontColor Black
+
+}
+
+actor User
+participant YourApp as App
+participant "Riiiver\nSDK" as ERSDK
+participant "Safari\n(Ext. Browser)" as Safari
+participant "Riiiver\nCloud" as Riiiver
+
+User -> App: execute App
+
+App -> ERSDK: ERAuth.getInstance().initialize(Context context)
+activate ERSDK
+
+App -> ERSDK: ERAuth.getInstance().isLoggedIn
+note left: Check if you\nare logged in.
+ERSDK --> App: 
+
+alt ERSDK: ERAuth.getInstance().isLoggedIn == false (not logged in yet)
+    App -> ERSDK: ERAuth.sharedInstance.startWebLogin(\n\tList<String> deviceIds,\n\tIERAuthWebLoginCallback callback\n)
+    ERSDK -> Safari: Login screen
+    User -> Safari: Login Operations
+    Safari <-> Riiiver: Authentication Process
+    Safari -> App: Launching apps with URL schemas
+    App -> ERSDK: ERAuth.sharedInstance.challengeAuthByWebLogin(\n\tIntent intent,\n\tIERAuthChallengeCallback callback\n)
+    note left: Attempt to\nsave the token.
+    alt callbackのonSuccess
+        ERSDK <---> Riiiver: Login completed.\nToken saved successfully. 
+    end
+    
+else ERSDK: ERAuth.getInstance().isLoggedIn == true (Already logged in)
+    ERSDK <---> Riiiver: Logged in.\nAlready obtained token.
+end
+
+
+
+
+
+@enduml

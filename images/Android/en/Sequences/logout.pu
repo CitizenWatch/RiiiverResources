@@ -1,0 +1,67 @@
+@startuml
+title Logout from the Riiiver
+hide footbox
+
+skinparam DefaultFontName "Noto Sans JP, Helvetica, Arial, Liberation Sans"
+skinparam BackgroundColor #F2EEE6
+skinparam Shadowing false
+skinparam NoteBackgroundColor #F9B5AD
+skinparam NodeBorderColor #F26767
+
+skinparam sequence {
+ArrowColor #444444
+ActorBorderColor Black
+LifeLineBorderColor #222222
+LifeLineBackgroundColor White
+BoxBorderColor #FFFFFF
+BoxBackgroundColor #F2fEf6
+GroupBackgroundColor #FFFFFF
+GroupBodyBackgroundColor #F3F0F0
+
+ParticipantBorderColor #111111
+ParticipantBackgroundColor White
+ParticipantFontSize 17
+ParticipantFontColor #111111
+BoundaryBorderColor Gray
+ActorBackgroundColor #eeeeee
+ActorFontColor Black
+
+}
+
+actor User
+participant YourApp as App
+participant "Riiiver\nSDK" as ERSDK
+participant "Riiiver\nCloud" as Riiiver
+
+User -> App: initialize App
+
+App -> ERSDK: ERSDK.sharedInstance()
+activate ERSDK
+App <-- ERSDK: sdk
+deactivate ERSDK
+
+App -> ERSDK: ERAuth.sharedInstance.isLoggedIn()
+note left: Check if you\nare logged in.
+ERSDK --> App: 
+...
+User -> App: logout
+alt ERAuth.sharedInstance.isLoggedIn() == true (Already logged in)
+    ERSDK <---> Riiiver: Logged in.\nAlready obtained token.
+    App -> ERSDK: ERAuth.sharedInstance.logout(\n\tcompletion: <Error>\n)
+    ERSDK -> Riiiver: Logout Operations
+    ERSDK <-- Riiiver: End of process(error)
+    ERSDK --> App: completion(error)
+    alt error == nil <success>
+        App -> App: Processing after successful logout
+        App -> User: Logged out.
+    else
+        App -> App: Handling of logout failures\n(e.g. network errors)
+        App -> User: Failed to logout. \n (Reason)
+    end
+end
+
+
+
+
+
+@enduml
